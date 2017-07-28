@@ -1,8 +1,23 @@
 import React, { Component } from 'react';
 import robotImg from './robot.png';
 import cowImg from './cow.png';
+import bombImg from './bomb.png';
 import cowLogo from './cow-full.png';
 import './App.css';
+
+const MOVE = {
+    UP:         'UP',
+    DOWN:       'DOWN',
+    LEFT:       'LEFT',
+    RIGHT:      'RIGHT',
+    UP_LEFT:    'UP_LEFT',
+    UP_RIGHT:   'UP_RIGHT',
+    DOWN_LEFT:  'DOWN_LEFT',
+    DOWN_RIGHT: 'DOWN_RIGHT',
+    TELEPORT:   'TELEPORT'
+};
+
+const MOVE_SIZE = 40;
 
 class Board extends Component {
   componentDidMount() {
@@ -52,12 +67,21 @@ class Control extends Component {
     return (
       <section>
         <div>
-          <button value='UP' onClick={this.handleMoveClick}>Up</button>
+          <button value={MOVE.UP_LEFT} onClick={this.handleMoveClick}>Up+Left</button>
+          <button value={MOVE.UP} onClick={this.handleMoveClick}>Up</button>
+          <button value={MOVE.UP_RIGHT} onClick={this.handleMoveClick}>Up+Right</button>
         </div>
-        <button value='LEFT' onClick={this.handleMoveClick}>Left</button><span>&emsp;&emsp;&emsp;</span><button value='RIGHT' onClick={this.handleMoveClick}>Right</button>
-        <div><button value='DOWN' onClick={this.handleMoveClick}>Down</button></div>
+        <button value={MOVE.LEFT} onClick={this.handleMoveClick}>Left</button>
+          <span>&emsp;&emsp;&emsp;</span>
+        <button value={MOVE.RIGHT} onClick={this.handleMoveClick}>Right
+        </button>
         <div>
-          <button value='TELEPORT' onClick={this.handleMoveClick}>Teleport</button>
+          <button value={MOVE.DOWN_LEFT} onClick={this.handleMoveClick}>Down+Left</button>          
+          <button value={MOVE.DOWN} onClick={this.handleMoveClick}>Down</button>
+          <button value={MOVE.DOWN_RIGHT} onClick={this.handleMoveClick}>Down+Right</button>
+        </div>
+        <div>
+          <button value={MOVE.TELEPORT} onClick={this.handleMoveClick}>Teleport</button>
         </div>
       </section>
     );
@@ -66,63 +90,60 @@ class Control extends Component {
 
 const genRoboPos = (level) => {
   return ([
-    {x: 100, y: 20}, {x:50, y:349}, {x:500, y:246}, {x:600, y:300}
+    { x: 400, y: 40 }, { x:40, y:200 }, { x:400, y:320 }, { x:400, y:240 }
   ]);  
 };
 
 class App extends Component {
   state = {
     roboPos: genRoboPos(1),
-    cowPos: {x:350, y:200}
+    cowPos: { x:400, y:200 }
   }
 
-  moveCow = (dir) => {
-    switch(dir) {
-      case 'UP':
-        this.setState(prevState => ({
-          cowPos: {
-            x: prevState.cowPos.x,
-            y: prevState.cowPos.y-10
-          },
-          roboPos: this.moveRobo(prevState.roboPos, dir)
-        }));
-        break;
-      case 'DOWN':
-        this.setState(prevState => ({
-          cowPos: {
-            x: prevState.cowPos.x,
-            y: prevState.cowPos.y+10
-          } ,
-          roboPos: this.moveRobo(prevState.roboPos, dir)
-        }));
-        break;
-      case 'RIGHT':
-        this.setState(prevState => ({
-          cowPos: {
-            x: prevState.cowPos.x+10,
-            y: prevState.cowPos.y
-          }  ,
-          roboPos: this.moveRobo(prevState.roboPos, dir)
-        }));
-        break;
-      case 'LEFT':
-        this.setState(prevState => ({
-          cowPos: {
-            x: prevState.cowPos.x-10,
-            y: prevState.cowPos.y
-          },
-          roboPos: this.moveRobo(prevState.roboPos, dir)
-        }));
-        break;  
-      default:    
-    }
+  calcCowPos = (cowPos, dir) => {
+    const newPos = {};
+    newPos[MOVE.UP]         = { x: cowPos.x, y: cowPos.y-MOVE_SIZE };
+    newPos[MOVE.DOWN]       = { x: cowPos.x, y: cowPos.y+MOVE_SIZE };
+    newPos[MOVE.RIGHT]      = { x: cowPos.x+MOVE_SIZE, y: cowPos.y };
+    newPos[MOVE.LEFT]       = { x: cowPos.x-MOVE_SIZE, y: cowPos.y };
+    newPos[MOVE.UP_LEFT]    = { x: cowPos.x-MOVE_SIZE, y: cowPos.y-MOVE_SIZE };
+    newPos[MOVE.UP_RIGHT]   = { x: cowPos.x+MOVE_SIZE, y: cowPos.y-MOVE_SIZE };
+    newPos[MOVE.DOWN_LEFT]  = { x: cowPos.x-MOVE_SIZE, y: cowPos.y+MOVE_SIZE };
+    newPos[MOVE.DOWN_RIGHT] = { x: cowPos.x+MOVE_SIZE, y: cowPos.y+MOVE_SIZE };
+
+    return newPos[dir];
   };
 
-  moveRobo = (robos, dir) => {
-    return ([
-      {x: 100, y: 20}, {x:50, y:349}, {x:500, y:246}, {x:300, y:300}
-    ]);  
-  }
+  moveCow = (dir) => {
+    const newCowPos = this.calcCowPos(this.state.cowPos, dir);
+    this.setState(prevState => ({
+      cowPos: newCowPos
+    }), this.moveRobots);
+  };
+
+  calcRobotsPos = (roboPos, cow) => {
+    var newRoboPos = roboPos.map(robo => {
+      var newRobo = {};
+      if (robo.x === cow.x) {
+        newRobo.x = robo.x;
+        newRobo.y = robo.y > cow.y ? robo.y - MOVE_SIZE : robo.y + MOVE_SIZE 
+      } else if (robo.y === cow.y) {
+        newRobo.y = robo.y;
+        newRobo.x = robo.x > cow.x ? robo.x - MOVE_SIZE : robo.x + MOVE_SIZE
+      } else {
+        return robo;
+      }
+      return newRobo;    
+    });
+
+    return newRoboPos;  
+  };
+
+  moveRobots = () => {
+    // this.setState(prevState => ({
+    //   roboPos: this.calcRobotsPos(prevState.roboPos, prevState.cowPos)
+    // }));
+  };
 
   render() {
     const { roboPos, cowPos} = this.state;

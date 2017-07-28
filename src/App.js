@@ -25,14 +25,14 @@ class Board extends Component {
     robotImage.onload = () => {
       const roboPos = this.props.roboPos;
       roboPos.forEach(pos=>{
-        ctx.drawImage(robotImage, pos[0], pos[1]);
+        ctx.drawImage(robotImage, pos.x, pos.y);
       });
     };
 
     cowImage.src = cowImg;
     cowImage.onload = () => {
       const cowPos = this.props.cowPos;
-      ctx.drawImage(cowImage, cowPos[0], cowPos[1])
+      ctx.drawImage(cowImage, cowPos.x, cowPos.y)
     };
   };
 
@@ -47,6 +47,7 @@ class Control extends Component {
   handleMoveClick = (event) => {
     this.props.moveCow(event.currentTarget.value);
   };
+
   render() {
     return (
       <section>
@@ -65,43 +66,63 @@ class Control extends Component {
 
 const genRoboPos = (level) => {
   return ([
-    [100, 20], [50, 349], [500, 246], [600,300]
+    {x: 100, y: 20}, {x:50, y:349}, {x:500, y:246}, {x:600, y:300}
   ]);  
 };
 
 class App extends Component {
   state = {
     roboPos: genRoboPos(1),
-    cowPos: [350, 200]
+    cowPos: {x:350, y:200}
   }
 
   moveCow = (dir) => {
     switch(dir) {
       case 'UP':
         this.setState(prevState => ({
-          cowPos: [prevState.cowPos[0], prevState.cowPos[1]-10]
+          cowPos: {
+            x: prevState.cowPos.x,
+            y: prevState.cowPos.y-10
+          },
+          roboPos: this.moveRobo(prevState.roboPos, dir)
         }));
         break;
       case 'DOWN':
         this.setState(prevState => ({
-          cowPos: [prevState.cowPos[0], prevState.cowPos[1]+10]
+          cowPos: {
+            x: prevState.cowPos.x,
+            y: prevState.cowPos.y+10
+          } ,
+          roboPos: this.moveRobo(prevState.roboPos, dir)
         }));
         break;
       case 'RIGHT':
         this.setState(prevState => ({
-          cowPos: [prevState.cowPos[0]+10, prevState.cowPos[1]]
+          cowPos: {
+            x: prevState.cowPos.x+10,
+            y: prevState.cowPos.y
+          }  ,
+          roboPos: this.moveRobo(prevState.roboPos, dir)
         }));
         break;
       case 'LEFT':
         this.setState(prevState => ({
-          cowPos: [prevState.cowPos[0]-10, prevState.cowPos[1]]
+          cowPos: {
+            x: prevState.cowPos.x-10,
+            y: prevState.cowPos.y
+          },
+          roboPos: this.moveRobo(prevState.roboPos, dir)
         }));
         break;  
       default:    
     }
-  
-
   };
+
+  moveRobo = (robos, dir) => {
+    return ([
+      {x: 100, y: 20}, {x:50, y:349}, {x:500, y:246}, {x:300, y:300}
+    ]);  
+  }
 
   render() {
     const { roboPos, cowPos} = this.state;

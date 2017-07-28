@@ -1,4 +1,4 @@
-This is a modern take on the classic [BSD robots] (https://www.freebsd.org/cgi/man.cgi?query=robots&apropos=0&sektion=6) game that I used to play in the 90s.
+This is a modern take on the classic [BSD robots](https://www.freebsd.org/cgi/man.cgi?query=robots&apropos=0&sektion=6) game that I used to play in the 90s.
 
 This project was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app).
 

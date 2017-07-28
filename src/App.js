@@ -18,6 +18,10 @@ const MOVE = {
 };
 
 const MOVE_SIZE = 40;
+const BOARD = {
+  WIDTH: 1000,
+  HEIGHT: 600
+};
 
 class Board extends Component {
   componentDidMount() {
@@ -38,22 +42,22 @@ class Board extends Component {
     
     robotImage.src = robotImg;
     robotImage.onload = () => {
-      const roboPos = this.props.roboPos;
-      roboPos.forEach(pos=>{
-        ctx.drawImage(robotImage, pos.x, pos.y);
+      const robots = this.props.robots;
+      robots.forEach(robot=>{
+        ctx.drawImage(robotImage, robot.x, robot.y);
       });
     };
 
     cowImage.src = cowImg;
     cowImage.onload = () => {
-      const cowPos = this.props.cowPos;
-      ctx.drawImage(cowImage, cowPos.x, cowPos.y)
+      const cow = this.props.cow;
+      ctx.drawImage(cowImage, cow.x, cow.y)
     };
   };
 
   render() {
     return (
-      <canvas id="board" width="1000" height="605">Your browser doesn't support HTML5 Canvas</canvas>
+      <canvas id="board" width={BOARD.WIDTH} height={BOARD.HEIGHT}>Your browser doesn't support HTML5 Canvas</canvas>
     );
   }  
 }
@@ -90,63 +94,74 @@ class Control extends Component {
 
 const genRoboPos = (level) => {
   return ([
-    { x: 400, y: 40 }, { x:40, y:200 }, { x:400, y:320 }, { x:400, y:240 }
+     { x:40, y:200 }, { x: 400, y: 40 }, { x:400, y:320 }, { x:400, y:240 }
   ]);  
 };
 
 class App extends Component {
   state = {
-    roboPos: genRoboPos(1),
-    cowPos: { x:400, y:200 }
+    robots: genRoboPos(1),
+    cow: { x:480, y:280 },
+    bombs: []
   }
 
-  calcCowPos = (cowPos, dir) => {
-    const newPos = {};
-    newPos[MOVE.UP]         = { x: cowPos.x, y: cowPos.y-MOVE_SIZE };
-    newPos[MOVE.DOWN]       = { x: cowPos.x, y: cowPos.y+MOVE_SIZE };
-    newPos[MOVE.RIGHT]      = { x: cowPos.x+MOVE_SIZE, y: cowPos.y };
-    newPos[MOVE.LEFT]       = { x: cowPos.x-MOVE_SIZE, y: cowPos.y };
-    newPos[MOVE.UP_LEFT]    = { x: cowPos.x-MOVE_SIZE, y: cowPos.y-MOVE_SIZE };
-    newPos[MOVE.UP_RIGHT]   = { x: cowPos.x+MOVE_SIZE, y: cowPos.y-MOVE_SIZE };
-    newPos[MOVE.DOWN_LEFT]  = { x: cowPos.x-MOVE_SIZE, y: cowPos.y+MOVE_SIZE };
-    newPos[MOVE.DOWN_RIGHT] = { x: cowPos.x+MOVE_SIZE, y: cowPos.y+MOVE_SIZE };
+  calcCowPos = (cow, dir) => {
+    const newCow = {};
+    newCow[MOVE.UP]         = { x: cow.x, y: cow.y - MOVE_SIZE < 0 ? cow.y : cow.y - MOVE_SIZE };
+    newCow[MOVE.DOWN]       = { x: cow.x, y: cow.y + MOVE_SIZE < BOARD.HEIGHT ? cow.y + MOVE_SIZE : cow.y };
+    newCow[MOVE.RIGHT]      = { x: cow.x + MOVE_SIZE < BOARD.WIDTH ? cow.x + MOVE_SIZE : cow.x, y: cow.y };
+    newCow[MOVE.LEFT]       = { x: cow.x - MOVE_SIZE < 0 ? cow.x : cow.x - MOVE_SIZE,
+                                y: cow.y };
+    newCow[MOVE.UP_LEFT]    = { x: cow.x - MOVE_SIZE < 0 ? cow.x : cow.x - MOVE_SIZE,
+                                y: cow.y - MOVE_SIZE < 0 ? cow.y : cow.y - MOVE_SIZE };
+    newCow[MOVE.UP_RIGHT]   = { x: cow.x + MOVE_SIZE < BOARD.WIDTH ? cow.x + MOVE_SIZE : cow.x,
+                                y: cow.y - MOVE_SIZE < 0 ? cow.y : cow.y - MOVE_SIZE };
+    newCow[MOVE.DOWN_LEFT]  = { x: cow.x - MOVE_SIZE < 0 ? cow.x : cow.x - MOVE_SIZE,
+                                y: cow.y + MOVE_SIZE < BOARD.HEIGHT ? cow.y + MOVE_SIZE : cow.y };
+    newCow[MOVE.DOWN_RIGHT] = { x: cow.x + MOVE_SIZE < BOARD.WIDTH ? cow.x + MOVE_SIZE : cow.x, 
+                                y: cow.y + MOVE_SIZE < BOARD.HEIGHT ? cow.y + MOVE_SIZE : cow.y };
 
-    return newPos[dir];
+    return newCow[dir];
   };
 
   moveCow = (dir) => {
-    const newCowPos = this.calcCowPos(this.state.cowPos, dir);
+    const newCowPos = this.calcCowPos(this.state.cow, dir);
     this.setState(prevState => ({
-      cowPos: newCowPos
+      cow: newCowPos
     }), this.moveRobots);
   };
 
-  calcRobotsPos = (roboPos, cow) => {
-    var newRoboPos = roboPos.map(robo => {
-      var newRobo = {};
-      if (robo.x === cow.x) {
-        newRobo.x = robo.x;
-        newRobo.y = robo.y > cow.y ? robo.y - MOVE_SIZE : robo.y + MOVE_SIZE 
-      } else if (robo.y === cow.y) {
-        newRobo.y = robo.y;
-        newRobo.x = robo.x > cow.x ? robo.x - MOVE_SIZE : robo.x + MOVE_SIZE
+  calcRobotsPos = (robots, cow) => {
+    var newRoboPos = robots.map(robot => {
+      var newRobot = {};
+      if (robot.x === cow.x) {
+        newRobot.x = robot.x;
+        newRobot.y = robot.y > cow.y ? robot.y - MOVE_SIZE : robot.y + MOVE_SIZE 
+      } else if (robot.y === cow.y) {
+        newRobot.y = robot.y;
+        newRobot.x = robot.x > cow.x ? robot.x - MOVE_SIZE : robot.x + MOVE_SIZE
       } else {
-        return robo;
+        newRobot.y = robot.y > cow.y ? robot.y - MOVE_SIZE : robot.y + MOVE_SIZE;
+        newRobot.x = robot.x > cow.x ? robot.x - MOVE_SIZE : robot.x + MOVE_SIZE;
       }
-      return newRobo;    
+      return newRobot;    
     });
 
     return newRoboPos;  
   };
 
   moveRobots = () => {
-    // this.setState(prevState => ({
-    //   roboPos: this.calcRobotsPos(prevState.roboPos, prevState.cowPos)
-    // }));
+    this.setState(prevState => ({
+      robots: this.calcRobotsPos(prevState.robots, prevState.cow)
+    }), this.checkCollision);
+  };
+
+  checkCollision = () => {
+    
   };
 
   render() {
-    const { roboPos, cowPos} = this.state;
+    const { robots, cow} = this.state;
     return (
       <div className="App" onKeyUp={this.handleKeyEvent}>
         <div className="App-header">
@@ -155,7 +170,7 @@ class App extends Component {
         </div>
         <p className="App-intro">
         </p>
-        <Board roboPos={roboPos} cowPos={cowPos}></Board>
+        <Board robots={robots} cow={cow}></Board>
         <Control moveCow={this.moveCow}/>
       </div>
     );

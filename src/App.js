@@ -20,7 +20,7 @@ const MOVE = {
 
 const MOVE_SIZE = 40;
 const BOARD = {
-  WIDTH: 1000,
+  WIDTH: 1200,
   HEIGHT: 600
 };
 
@@ -104,9 +104,13 @@ class Control extends Component {
 };
 
 const genRoboPos = (level) => {
-  return ([
-     { x:40, y:200 }, { x: 400, y: 40 }, { x:400, y:320 }, { x:400, y:240 }
-  ]);  
+  var incrementBy = 16, robots = new Array(level*incrementBy);
+  robots.fill(null);
+  robots = robots.map((robot => {
+    return getNewPos();
+  }));
+
+  return robots;  
 };
 
 const getRandomInt = (min, max) => {
@@ -119,6 +123,12 @@ const getRandomPos = (min, max) => {
   return getRandomInt(min, max) * MOVE_SIZE;
 };
 
+const getNewPos = () => {
+  return {
+      x: getRandomPos(0, BOARD.WIDTH/40),
+      y: getRandomPos(0, BOARD.HEIGHT/40)
+  };
+};
 class App extends Component {
   state = {
     robots: genRoboPos(1),
@@ -128,13 +138,6 @@ class App extends Component {
   }
 
   calcCowPos = (cow, dir) => {
-    const teleport = () => {
-      return {
-         x: getRandomPos(0, BOARD.WIDTH/40),
-         y: getRandomPos(0, BOARD.HEIGHT/40)
-      };
-    };
-
     const newCow = {};
     newCow[MOVE.UP]         = { x: cow.x, y: cow.y - MOVE_SIZE < 0 ? cow.y : cow.y - MOVE_SIZE };
     newCow[MOVE.DOWN]       = { x: cow.x, y: cow.y + MOVE_SIZE < BOARD.HEIGHT ? cow.y + MOVE_SIZE : cow.y };
@@ -149,7 +152,7 @@ class App extends Component {
                                 y: cow.y + MOVE_SIZE < BOARD.HEIGHT ? cow.y + MOVE_SIZE : cow.y };
     newCow[MOVE.DOWN_RIGHT] = { x: cow.x + MOVE_SIZE < BOARD.WIDTH ? cow.x + MOVE_SIZE : cow.x, 
                                 y: cow.y + MOVE_SIZE < BOARD.HEIGHT ? cow.y + MOVE_SIZE : cow.y };
-    newCow[MOVE.TELEPORT]   = teleport()
+    newCow[MOVE.TELEPORT]   = getNewPos()
 
     return newCow[dir];
   };

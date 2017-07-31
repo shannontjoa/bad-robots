@@ -3,6 +3,7 @@ import robotImg from './robot.png';
 import cowImg from './cow.png';
 import bombImg from './bomb.png';
 import cowLogo from './cow-full.png';
+import { findIndex, findLastIndex } from 'lodash';
 import './App.css';
 
 const MOVE = {
@@ -34,17 +35,27 @@ class Board extends Component {
   
   draw = () => {
     var canvas = document.getElementById('board');
-    canvas.style.backgroundColor = 'rgba(158, 167, 184, 0.2)'
     const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
     const robotImage = new Image(),
-          cowImage = new Image();
-    
+          cowImage = new Image(),
+          bombImage = new Image();
+
+    canvas.style.backgroundColor = 'rgba(158, 167, 184, 0.2)'
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
     robotImage.src = robotImg;
     robotImage.onload = () => {
       const robots = this.props.robots;
       robots.forEach(robot=>{
         ctx.drawImage(robotImage, robot.x, robot.y);
+      });
+    };
+
+    bombImage.src = bombImg;
+    bombImage.onload = () => {
+      const bombs = this.props.bombs;
+      bombs.forEach(bomb => {
+        ctx.drawImage(bombImage, bomb.x, bomb.y);
       });
     };
 
@@ -102,7 +113,8 @@ class App extends Component {
   state = {
     robots: genRoboPos(1),
     cow: { x:480, y:280 },
-    bombs: []
+    bombs: [],
+    gameOver: false
   }
 
   calcCowPos = (cow, dir) => {
@@ -157,11 +169,33 @@ class App extends Component {
   };
 
   checkCollision = () => {
+    var { bombs, cow, robots } = this.state;
+    var gameOver = false;
+    var noBombRobots = robots.filter(robot => {
+      return findIndex(bombs, robot) === -1;
+    });
+
+    var aliveRobots = noBombRobots.filter((robot, index, robots) => {
+      return findLastIndex(robots, robot) === findIndex(robots, robot);
+    });
+
+    var newBombs = noBombRobots.filter((robot, index, robots) => {
+      return findLastIndex(robots, robot) !== findIndex(robots, robot);
+    });
+
+    if (findIndex(bombs, cow) > -1 || findIndex(robots, cow) > -1) {
+     gameOver = true;
+    }
     
+    this.setState(prevState => ({
+      robots: aliveRobots,
+      bombs: bombs.concat(newBombs),
+      gameOver: gameOver
+    }));
   };
 
   render() {
-    const { robots, cow} = this.state;
+    const { robots, cow, bombs } = this.state;
     return (
       <div className="App" onKeyUp={this.handleKeyEvent}>
         <div className="App-header">
@@ -170,7 +204,7 @@ class App extends Component {
         </div>
         <p className="App-intro">
         </p>
-        <Board robots={robots} cow={cow}></Board>
+        <Board robots={robots} cow={cow} bombs={bombs}></Board>
         <Control moveCow={this.moveCow}/>
       </div>
     );

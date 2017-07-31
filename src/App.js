@@ -68,7 +68,7 @@ class Board extends Component {
 
   render() {
     return (
-      <canvas id="board" width={BOARD.WIDTH} height={BOARD.HEIGHT}>Your browser doesn't support HTML5 Canvas</canvas>
+      <canvas id="board" width={BOARD.WIDTH} height={BOARD.HEIGHT}>No Canvas available in your browser</canvas>
     );
   }  
 }

@@ -198,7 +198,7 @@ class App extends Component {
   };
 
   calcRobotsPos = (robots, cow) => {
-    var newRoboPos = robots.map(robot => {
+    var robotsPos = robots.map(robot => {
       var newRobot = {};
       if (robot.x === cow.x) {
         newRobot.x = robot.x;
@@ -213,10 +213,18 @@ class App extends Component {
       return newRobot;    
     });
 
-    return newRoboPos;  
+    return robotsPos;  
   };
 
   moveRobots = () => {
+    var { cow, robots } = this.state;
+    // Before moving robots, check if cow hit robots.
+    if (findIndex(robots, cow) > -1) {
+      this.setState(prevState => ({
+        status: { level: prevState.status.level, score: prevState.status.score, gameOver: true }
+      }));
+    }
+    // Otherwise, move robots
     this.setState(prevState => ({
       robots: this.calcRobotsPos(prevState.robots, prevState.cow)
     }), this.checkCollision);
@@ -243,24 +251,30 @@ class App extends Component {
   };
   checkCollision = () => {
     var { bombs, cow, robots } = this.state;
-    var noBombRobots = robots.filter(robot => {
+    var score = 0;
+    // Find robots that weren't bombed.
+    var bombSurvivors = robots.filter(robot => {
       return findIndex(bombs, robot) === -1;
     });
 
-    var aliveRobots = noBombRobots.filter((robot, index, robots) => {
+    // Check collision with one another
+    var aliveRobots = bombSurvivors.filter((robot, index, robots) => {
       return findLastIndex(robots, robot) === findIndex(robots, robot);
     });
 
-    var newBombs = noBombRobots.filter((robot, index, robots) => {
+    var newBombs = bombSurvivors.filter((robot, index, robots) => {
       return findLastIndex(robots, robot) !== findIndex(robots, robot);
     });
+
+    score = (robots.length - bombSurvivors.length) * 2;
+    score += newBombs.length * 2;
 
     this.setState(prevState => ({
       robots: aliveRobots,
       bombs: bombs.concat(newBombs),
       status: {
         level: prevState.status.level,
-        score: prevState.status.score,
+        score: prevState.status.score + score,
         gameOver: findIndex(bombs, cow) > -1 || findIndex(robots, cow) > -1
       }
     }), this.checkBoardStatus);

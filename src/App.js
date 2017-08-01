@@ -20,7 +20,7 @@ const MOVE = {
 
 const MOVE_SIZE = 40;
 const BOARD = {
-  WIDTH: 1200,
+  WIDTH: 1000,
   HEIGHT: 600
 };
 
@@ -68,19 +68,52 @@ class Board extends Component {
 
   render() {
     return (
-      <canvas id="board" width={BOARD.WIDTH} height={BOARD.HEIGHT}>No Canvas available in your browser</canvas>
+      <section>
+        <canvas id="board" width={BOARD.WIDTH} height={BOARD.HEIGHT}>No Canvas available in your browser</canvas>
+      </section>
     );
-  }  
+  };  
 }
+
+const Status = (props) => {
+  const displayGameOver = () => {
+    if (props.status.gameOver) {
+      return (<span>GAME OVER</span>);
+    }
+  }
+  return (
+    <section className="Status">
+      <div>{ displayGameOver() }</div>
+      <div>&nbsp;</div>
+      <div className="Level">
+        <div>Level</div>
+        <div>{props.status.level}</div>
+      </div>
+      <div>&nbsp;</div>
+      <div className="Score">
+        <div className="Score">Score</div>
+        <div>{props.status.score}</div>
+      </div>  
+    </section>
+  );
+};
 
 class Control extends Component {
   handleMoveClick = (event) => {
     this.props.moveCow(event.currentTarget.value);
   };
 
+  handleNewGameClick = (event) => {
+    this.props.initNewGame();
+  };
+
   render() {
     return (
-      <section>
+      <section className='Control'>
+        <div>
+          <button onClick={this.handleNewGameClick}>New Game</button>
+        </div>
+        <div>&nbsp;</div>
         <div>
           <button value={MOVE.UP_LEFT} onClick={this.handleMoveClick}>Up+Left</button>
           <button value={MOVE.UP} onClick={this.handleMoveClick}>Up</button>
@@ -104,7 +137,7 @@ class Control extends Component {
 };
 
 const genRoboPos = (level) => {
-  var incrementBy = 16, robots = new Array(level*incrementBy);
+  var incrementBy = 5, robots = new Array(level*incrementBy);
   robots.fill(null);
   robots = robots.map((robot => {
     return getNewPos();
@@ -132,9 +165,9 @@ const getNewPos = () => {
 class App extends Component {
   state = {
     robots: genRoboPos(1),
-    cow: { x:480, y:280 },
+    cow: getNewPos(),
     bombs: [],
-    gameOver: false
+    status: { level: 1, score: 0, gameOver: false }
   }
 
   calcCowPos = (cow, dir) => {
@@ -189,9 +222,27 @@ class App extends Component {
     }), this.checkCollision);
   };
 
+  initNewGame = () => {
+      this.setState(prevState => ({
+        robots: genRoboPos(1),
+        cow: getNewPos(),
+        bombs: [],
+        status: { level: 1, score: 0, gameOver: false }
+      }));
+  };
+
+  checkBoardStatus = () => {
+    if (this.state.robots.length === 0) {
+      this.setState(prevState => ({
+        robots: genRoboPos(prevState.status.level + 1),
+        cow: getNewPos(),
+        bombs: [],
+        status: { level: prevState.status.level + 1, score: prevState.status.score, gameOver: false }
+      }));
+    }
+  };
   checkCollision = () => {
     var { bombs, cow, robots } = this.state;
-    var gameOver = false;
     var noBombRobots = robots.filter(robot => {
       return findIndex(bombs, robot) === -1;
     });
@@ -204,29 +255,33 @@ class App extends Component {
       return findLastIndex(robots, robot) !== findIndex(robots, robot);
     });
 
-    if (findIndex(bombs, cow) > -1 || findIndex(robots, cow) > -1) {
-     gameOver = true;
-    }
-    
     this.setState(prevState => ({
       robots: aliveRobots,
       bombs: bombs.concat(newBombs),
-      gameOver: gameOver
-    }));
+      status: {
+        level: prevState.status.level,
+        score: prevState.status.score,
+        gameOver: findIndex(bombs, cow) > -1 || findIndex(robots, cow) > -1
+      }
+    }), this.checkBoardStatus);
   };
 
   render() {
-    const { robots, cow, bombs } = this.state;
+    const { robots, cow, bombs, status } = this.state;
     return (
       <div className="App" onKeyUp={this.handleKeyEvent}>
-        <div className="App-header">
+        <header className="App-header">
           <img src={cowLogo} className="App-logo" alt="logo" />
           <h2>Bad Robots</h2>
-        </div>
+        </header>
         <p className="App-intro">
         </p>
-        <Board robots={robots} cow={cow} bombs={bombs}></Board>
-        <Control moveCow={this.moveCow}/>
+        <div className="Game">
+          <Status status={status}></Status>
+          <Board robots={robots} cow={cow} bombs={bombs}></Board>
+          <Control moveCow={this.moveCow} initNewGame={this.initNewGame}/>
+        </div>
+        <footer></footer>
       </div>
     );
   }

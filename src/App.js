@@ -15,7 +15,8 @@ const MOVE = {
     UP_RIGHT:   'UP_RIGHT',
     DOWN_LEFT:  'DOWN_LEFT',
     DOWN_RIGHT: 'DOWN_RIGHT',
-    TELEPORT:   'TELEPORT'
+    TELEPORT:   'TELEPORT',
+    S_TELEPORT: 'S_TELEPORT'
 };
 
 const MOVE_SIZE = 40;
@@ -93,7 +94,12 @@ const Status = (props) => {
       <div className="Score">
         <div className="Score">Score</div>
         <div>{props.status.score}</div>
-      </div>  
+      </div>
+      <div>&nbsp;</div>
+      <div>
+        <div className="Score">Safe teleport</div>
+        <div>{props.status.safeTeleport}</div>
+      </div>    
     </section>
   );
 };
@@ -128,9 +134,18 @@ class Control extends Component {
           <button value={MOVE.DOWN} onClick={this.handleMoveClick}>Down</button>
           <button value={MOVE.DOWN_RIGHT} onClick={this.handleMoveClick}>Down+Right</button>
         </div>
+        <div>&nbsp;</div>
         <div>
           <button value={MOVE.TELEPORT} onClick={this.handleMoveClick}>Teleport</button>
         </div>
+        <div>&nbsp;</div>
+        <div>
+          <button disabled value={MOVE.S_TELEPORT} onClick={this.handleMoveClick}>Safe Teleport</button>
+        </div>
+        <div>&nbsp;</div>
+        <div>
+          <button disabled value={MOVE.CATCH_ME} onClick={this.handleMoveClick}>Catch Me If You Can</button>
+        </div>          
       </section>
     );
   }
@@ -167,7 +182,7 @@ class App extends Component {
     robots: genRoboPos(1),
     cow: getNewPos(),
     bombs: [],
-    status: { level: 1, score: 0, gameOver: false }
+    status: { level: 1, score: 0, gameOver: false, safeTeleport: 0 }
   }
 
   calcCowPos = (cow, dir) => {

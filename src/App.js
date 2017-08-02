@@ -16,7 +16,8 @@ const MOVE = {
     DOWN_LEFT:  'DOWN_LEFT',
     DOWN_RIGHT: 'DOWN_RIGHT',
     TELEPORT:   'TELEPORT',
-    S_TELEPORT: 'S_TELEPORT'
+    S_TELEPORT: 'S_TELEPORT',
+    CATCH_ME:   'CATCH_ME'
 };
 
 const MOVE_SIZE = 40;
@@ -97,7 +98,7 @@ const Status = (props) => {
       </div>
       <div>&nbsp;</div>
       <div>
-        <div className="Score">Safe teleport</div>
+        <div className="Score">Safe Teleport</div>
         <div>{props.status.safeTeleport}</div>
       </div>    
     </section>
@@ -144,7 +145,7 @@ class Control extends Component {
         </div>
         <div>&nbsp;</div>
         <div>
-          <button disabled value={MOVE.CATCH_ME} onClick={this.handleMoveClick}>Catch Me If You Can</button>
+          <button value={MOVE.CATCH_ME} onClick={this.handleMoveClick}>Catch Me If You Can</button>
         </div>          
       </section>
     );
@@ -200,12 +201,26 @@ class App extends Component {
                                 y: cow.y + MOVE_SIZE < BOARD.HEIGHT ? cow.y + MOVE_SIZE : cow.y };
     newCow[MOVE.DOWN_RIGHT] = { x: cow.x + MOVE_SIZE < BOARD.WIDTH ? cow.x + MOVE_SIZE : cow.x, 
                                 y: cow.y + MOVE_SIZE < BOARD.HEIGHT ? cow.y + MOVE_SIZE : cow.y };
-    newCow[MOVE.TELEPORT]   = getNewPos()
+    newCow[MOVE.TELEPORT]   = getNewPos();
+    newCow[MOVE.CATCH_ME]   = cow;
 
     return newCow[dir];
   };
 
+  setIntervalRef = 0;
+  catchMeIfYouCan = () => {
+      this.setIntervalRef = setInterval(this.moveRobots, 250);
+  };
+
+  stopCatchMe = () => {
+    clearInterval(this.setIntervalRef);
+    this.setIntervalRef = 0;
+  };
+
   moveCow = (dir) => {
+    if (dir === MOVE.CATCH_ME) {
+      this.catchMeIfYouCan();
+    }
     const newCowPos = this.calcCowPos(this.state.cow, dir);
     this.setState(prevState => ({
       cow: newCowPos
@@ -246,16 +261,21 @@ class App extends Component {
   };
 
   initNewGame = () => {
-      this.setState(prevState => ({
-        robots: genRoboPos(1),
-        cow: getNewPos(),
-        bombs: [],
-        status: { level: 1, score: 0, gameOver: false }
-      }));
+    this.stopCatchMe();
+    this.setState(prevState => ({
+      robots: genRoboPos(1),
+      cow: getNewPos(),
+      bombs: [],
+      status: { level: 1, score: 0, gameOver: false }
+    }));
   };
 
   checkBoardStatus = () => {
+    if (this.state.status.gameOver) {
+      this.stopCatchMe();
+    }
     if (this.state.robots.length === 0) {
+      this.stopCatchMe();
       this.setState(prevState => ({
         robots: genRoboPos(prevState.status.level + 1),
         cow: getNewPos(),

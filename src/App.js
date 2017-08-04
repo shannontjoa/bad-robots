@@ -114,6 +114,10 @@ class Control extends Component {
     this.props.initNewGame();
   };
 
+  getSafeTelBtn = () => {
+    return this.props.status.safeTeleport === 0 ? 'disabled' : '';
+  }
+
   render() {
     return (
       <section className='Control'>
@@ -141,7 +145,7 @@ class Control extends Component {
         </div>
         <div>&nbsp;</div>
         <div>
-          <button disabled value={MOVE.S_TELEPORT} onClick={this.handleMoveClick}>Safe Teleport</button>
+          <button disabled={this.getSafeTelBtn()} value={MOVE.S_TELEPORT} onClick={this.handleMoveClick}>Safe Teleport</button>
         </div>
         <div>&nbsp;</div>
         <div>
@@ -173,11 +177,26 @@ const getRandomPos = (min, max) => {
 };
 
 const getNewPos = () => {
+  console.log('calling getNewPos');
   return {
       x: getRandomPos(0, BOARD.WIDTH/40),
       y: getRandomPos(0, BOARD.HEIGHT/40)
   };
 };
+
+const getSafeNewPos = (robots, bombs) => {
+  var maxTry = 10000,
+      newPos;
+
+  while (maxTry !== 0) {
+    maxTry--;
+    newPos = getNewPos();
+    if (findIndex(robots, newPos) === -1 && findIndex(bombs, newPos) === -1) {
+      return newPos;
+    }
+  }
+};
+
 class App extends Component {
   state = {
     robots: genRoboPos(1),
@@ -187,7 +206,10 @@ class App extends Component {
   }
 
   calcCowPos = (cow, dir) => {
-    const newCow = {};
+    if (dir === MOVE.TELEPORT) { return getNewPos(); }
+    if (dir === MOVE.S_TELEPORT) { return getSafeNewPos(this.state.robots, this.state.bombs); }
+    
+    let newCow = {};
     newCow[MOVE.UP]         = { x: cow.x, y: cow.y - MOVE_SIZE < 0 ? cow.y : cow.y - MOVE_SIZE };
     newCow[MOVE.DOWN]       = { x: cow.x, y: cow.y + MOVE_SIZE < BOARD.HEIGHT ? cow.y + MOVE_SIZE : cow.y };
     newCow[MOVE.RIGHT]      = { x: cow.x + MOVE_SIZE < BOARD.WIDTH ? cow.x + MOVE_SIZE : cow.x, y: cow.y };
@@ -201,7 +223,6 @@ class App extends Component {
                                 y: cow.y + MOVE_SIZE < BOARD.HEIGHT ? cow.y + MOVE_SIZE : cow.y };
     newCow[MOVE.DOWN_RIGHT] = { x: cow.x + MOVE_SIZE < BOARD.WIDTH ? cow.x + MOVE_SIZE : cow.x, 
                                 y: cow.y + MOVE_SIZE < BOARD.HEIGHT ? cow.y + MOVE_SIZE : cow.y };
-    newCow[MOVE.TELEPORT]   = getNewPos();
     newCow[MOVE.CATCH_ME]   = cow;
 
     return newCow[dir];
@@ -212,9 +233,18 @@ class App extends Component {
       catchMeIfYouCan.getInstance().start(this.moveRobots);
     }
     const newCowPos = this.calcCowPos(this.state.cow, dir);
+    const moveRobots = () => {
+      return dir !== MOVE.S_TELEPORT ? this.moveRobots() : null; 
+    };
     this.setState(prevState => ({
-      cow: newCowPos
-    }), this.moveRobots);
+      cow: newCowPos,
+      status: {
+        level: prevState.status.level,
+        score: prevState.status.score,
+        gameOver: prevState.status.gameOver,
+        safeTeleport: dir === MOVE.S_TELEPORT ? prevState.status.safeTeleport-1 : prevState.status.safeTeleport 
+      }
+    }), moveRobots);
   };
 
   calcRobotsPos = (robots, cow) => {
@@ -241,7 +271,12 @@ class App extends Component {
     // Before moving robots, check if cow hit robots.
     if (findIndex(robots, cow) > -1) {
       this.setState(prevState => ({
-        status: { level: prevState.status.level, score: prevState.status.score, gameOver: true }
+        status: {
+           level: prevState.status.level,
+           score: prevState.status.score,
+           gameOver: true,
+           safeTeleport: prevState.status.safeTeleport
+         }
       }));
     }
     // Otherwise, move robots
@@ -256,21 +291,32 @@ class App extends Component {
       robots: genRoboPos(1),
       cow: getNewPos(),
       bombs: [],
-      status: { level: 1, score: 0, gameOver: false }
+      status: { level: 1, score: 0, gameOver: false, safeTeleport: 0 }
     }));
   };
 
   checkBoardStatus = () => {
-    if (this.state.status.gameOver) {
-      catchMeIfYouCan.getInstance().stop();
+    var catchMe = catchMeIfYouCan.getInstance();
+    if (this.state.status.gameOver && catchMe.isTrue()) {
+      catchMe.stop();
     }
     if (this.state.robots.length === 0) {
-      catchMeIfYouCan.getInstance().stop();
+      let safeTeleport = this.state.status.safeTeleport;
+      if (catchMe.isTrue()) {
+        catchMe.stop();
+        safeTeleport = (+safeTeleport || 0) + 1;
+      }
+
       this.setState(prevState => ({
         robots: genRoboPos(prevState.status.level + 1),
         cow: getNewPos(),
         bombs: [],
-        status: { level: prevState.status.level + 1, score: prevState.status.score, gameOver: false }
+        status: {
+          level: prevState.status.level + 1,
+          score: prevState.status.score,
+          gameOver: false,
+          safeTeleport: safeTeleport
+        }
       }));
     }
   };
@@ -300,7 +346,8 @@ class App extends Component {
       status: {
         level: prevState.status.level,
         score: prevState.status.score + score,
-        gameOver: findIndex(bombs, cow) > -1 || findIndex(robots, cow) > -1
+        gameOver: findIndex(bombs, cow) > -1 || findIndex(robots, cow) > -1,
+        safeTeleport: prevState.status.safeTeleport
       }
     }), this.checkBoardStatus);
   };
@@ -318,7 +365,7 @@ class App extends Component {
         <div className="Game">
           <Status status={status}></Status>
           <Board robots={robots} cow={cow} bombs={bombs}></Board>
-          <Control moveCow={this.moveCow} initNewGame={this.initNewGame}/>
+          <Control moveCow={this.moveCow} initNewGame={this.initNewGame} status={status}/>
         </div>
         <footer></footer>
       </div>
@@ -341,7 +388,8 @@ var catchMeIfYouCan = (() => {
     };
     var service = {
       start: startInterval,
-      stop: stopInterval
+      stop: stopInterval,
+      isTrue: () => { return setIntervalRef !== 0; }
     };
 
     return service;

@@ -114,8 +114,12 @@ class Control extends Component {
     this.props.initNewGame();
   };
 
-  getSafeTelBtn = () => {
+  getSafeTelBtnStatus = () => {
     return this.props.status.safeTeleport === 0 ? 'disabled' : '';
+  }
+
+  getNavBtnStatus = () => {
+    return this.props.status.gameOver ? 'disabled' : '';
   }
 
   render() {
@@ -126,26 +130,26 @@ class Control extends Component {
         </div>
         <div>&nbsp;</div>
         <div>
-          <button value={MOVE.UP_LEFT} onClick={this.handleMoveClick}>Up+Left</button>
-          <button value={MOVE.UP} onClick={this.handleMoveClick}>Up</button>
-          <button value={MOVE.UP_RIGHT} onClick={this.handleMoveClick}>Up+Right</button>
+          <button disabled={this.getNavBtnStatus()} value={MOVE.UP_LEFT} onClick={this.handleMoveClick}>Up+Left</button>
+          <button disabled={this.getNavBtnStatus()} value={MOVE.UP} onClick={this.handleMoveClick}>Up</button>
+          <button disabled={this.getNavBtnStatus()} value={MOVE.UP_RIGHT} onClick={this.handleMoveClick}>Up+Right</button>
         </div>
-        <button value={MOVE.LEFT} onClick={this.handleMoveClick}>Left</button>
+        <button disabled={this.getNavBtnStatus()} value={MOVE.LEFT} onClick={this.handleMoveClick}>Left</button>
           <span>&emsp;&emsp;&emsp;</span>
-        <button value={MOVE.RIGHT} onClick={this.handleMoveClick}>Right
+        <button disabled={this.getNavBtnStatus()} value={MOVE.RIGHT} onClick={this.handleMoveClick}>Right
         </button>
         <div>
-          <button value={MOVE.DOWN_LEFT} onClick={this.handleMoveClick}>Down+Left</button>          
-          <button value={MOVE.DOWN} onClick={this.handleMoveClick}>Down</button>
-          <button value={MOVE.DOWN_RIGHT} onClick={this.handleMoveClick}>Down+Right</button>
+          <button disabled={this.getNavBtnStatus()} value={MOVE.DOWN_LEFT} onClick={this.handleMoveClick}>Down+Left</button>          
+          <button disabled={this.getNavBtnStatus()} value={MOVE.DOWN} onClick={this.handleMoveClick}>Down</button>
+          <button disabled={this.getNavBtnStatus()} value={MOVE.DOWN_RIGHT} onClick={this.handleMoveClick}>Down+Right</button>
         </div>
         <div>&nbsp;</div>
         <div>
-          <button value={MOVE.TELEPORT} onClick={this.handleMoveClick}>Teleport</button>
+          <button disabled={this.getNavBtnStatus()} value={MOVE.TELEPORT} onClick={this.handleMoveClick}>Teleport</button>
         </div>
         <div>&nbsp;</div>
         <div>
-          <button disabled={this.getSafeTelBtn()} value={MOVE.S_TELEPORT} onClick={this.handleMoveClick}>Safe Teleport</button>
+          <button disabled={this.getSafeTelBtnStatus()} value={MOVE.S_TELEPORT} onClick={this.handleMoveClick}>Safe Teleport</button>
         </div>
         <div>&nbsp;</div>
         <div>

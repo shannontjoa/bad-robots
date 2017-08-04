@@ -207,19 +207,9 @@ class App extends Component {
     return newCow[dir];
   };
 
-  setIntervalRef = 0;
-  catchMeIfYouCan = () => {
-      this.setIntervalRef = setInterval(this.moveRobots, 250);
-  };
-
-  stopCatchMe = () => {
-    clearInterval(this.setIntervalRef);
-    this.setIntervalRef = 0;
-  };
-
   moveCow = (dir) => {
     if (dir === MOVE.CATCH_ME) {
-      this.catchMeIfYouCan();
+      catchMeIfYouCan.getInstance().start(this.moveRobots);
     }
     const newCowPos = this.calcCowPos(this.state.cow, dir);
     this.setState(prevState => ({
@@ -261,7 +251,7 @@ class App extends Component {
   };
 
   initNewGame = () => {
-    this.stopCatchMe();
+    catchMeIfYouCan.getInstance().stop();
     this.setState(prevState => ({
       robots: genRoboPos(1),
       cow: getNewPos(),
@@ -272,10 +262,10 @@ class App extends Component {
 
   checkBoardStatus = () => {
     if (this.state.status.gameOver) {
-      this.stopCatchMe();
+      catchMeIfYouCan.getInstance().stop();
     }
     if (this.state.robots.length === 0) {
-      this.stopCatchMe();
+      catchMeIfYouCan.getInstance().stop();
       this.setState(prevState => ({
         robots: genRoboPos(prevState.status.level + 1),
         cow: getNewPos(),
@@ -335,5 +325,37 @@ class App extends Component {
     );
   }
 }
+
+var catchMeIfYouCan = (() => {
+  var instance;
+
+  var init = () => {
+    var setIntervalRef = 0;
+    const interval = 250;
+    var startInterval = (callback) => {
+      setIntervalRef = setInterval(callback, interval);
+    };
+    var stopInterval = () => {
+      clearInterval(setIntervalRef);
+      setIntervalRef = 0;
+    };
+    var service = {
+      start: startInterval,
+      stop: stopInterval
+    };
+
+    return service;
+  }
+
+  return {
+    getInstance: () => {
+      if (!instance) {
+        instance = init();
+      }
+      return instance;
+    }
+  } ;
+}
+)();
 
 export default App;

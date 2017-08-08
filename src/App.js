@@ -3,6 +3,8 @@ import robotImg from './robot.png';
 import cowImg from './cow.png';
 import bombImg from './bomb.png';
 import cowLogo from './cow-full.png';
+import appleImg from './apple.png';
+import droidImg from './droid.png';
 import { findIndex, findLastIndex } from 'lodash';
 import './App.css';
 
@@ -42,14 +44,14 @@ const BOARD = {
 
 class Board extends Component {
   componentDidMount() {
-    this.draw();
+    this.draw(this.props.status.theme);
     document.addEventListener('keypress', (event) => {
       this.handleKeyPress(event.key);
     });
   }
 
-  componentWillReceiveProps() {
-    this.draw();
+  componentWillReceiveProps(nextProps) {
+    this.draw(nextProps.status.theme);
   }
   
   handleKeyPress = (key) => {
@@ -58,17 +60,24 @@ class Board extends Component {
     }
   };
 
-  draw = () => {
+  draw = (theme = 'default') => {
+    console.log(theme);
     var canvas = document.getElementById('board');
     const ctx = canvas.getContext('2d');
     const robotImage = new Image(),
           cowImage = new Image(),
           bombImage = new Image();
+    const getRobotImg = (theme) => {
+      return theme === 'default' ? robotImg : droidImg;
+    }
+    const getCowImg = (theme) => {
+      return theme === 'default' ? cowImg : appleImg;
+    }
 
     canvas.style.backgroundColor = 'rgba(158, 167, 184, 0.2)'
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    robotImage.src = robotImg;
+    robotImage.src = getRobotImg(theme);
     robotImage.onload = () => {
       const robots = this.props.robots;
       robots.forEach(robot=>{
@@ -84,7 +93,7 @@ class Board extends Component {
       });
     };
 
-    cowImage.src = cowImg;
+    cowImage.src = getCowImg(theme);
     cowImage.onload = () => {
       const cow = this.props.cow;
       ctx.drawImage(cowImage, cow.x, cow.y)
@@ -100,6 +109,20 @@ class Board extends Component {
   };  
 }
 
+const Theme = (props) => {
+  const handleThemeChange = (event) => {
+    props.changeTheme(event.currentTarget.value);
+  }
+  return (
+    <section>
+      <select name="theme" onChange={handleThemeChange}>
+        <option value="default">Default</option>
+        <option value="mobile">Mobile OS</option>
+      </select>
+    </section>
+  );
+};
+
 const Status = (props) => {
   const displayGameOver = () => {
     if (props.status.gameOver) {
@@ -108,6 +131,7 @@ const Status = (props) => {
   }
   return (
     <section className="Status">
+      <Theme changeTheme={props.changeTheme}></Theme>
       <div>{ displayGameOver() }</div>
       <div>&nbsp;</div>
       <div className="Level">
@@ -229,7 +253,7 @@ class App extends Component {
     robots: genRoboPos(1),
     cow: getNewPos(),
     bombs: [],
-    status: { level: 1, score: 0, gameOver: false, safeTeleport: 0 }
+    status: { level: 1, score: 0, gameOver: false, safeTeleport: 0, theme: 'default' }
   }
 
   calcCowPos = (cow, dir) => {
@@ -269,7 +293,8 @@ class App extends Component {
         level: prevState.status.level,
         score: prevState.status.score,
         gameOver: prevState.status.gameOver,
-        safeTeleport: dir === MOVE.S_TELEPORT ? prevState.status.safeTeleport-1 : prevState.status.safeTeleport 
+        safeTeleport: dir === MOVE.S_TELEPORT ? prevState.status.safeTeleport-1 : prevState.status.safeTeleport,
+        theme: prevState.status.theme
       }
     }), moveRobots);
   };
@@ -302,7 +327,8 @@ class App extends Component {
            level: prevState.status.level,
            score: prevState.status.score,
            gameOver: true,
-           safeTeleport: prevState.status.safeTeleport
+           safeTeleport: prevState.status.safeTeleport,
+           theme: prevState.status.theme
          }
       }));
     }
@@ -320,7 +346,10 @@ class App extends Component {
       robots: genRoboPos(1),
       cow: getNewPos(),
       bombs: [],
-      status: { level: 1, score: 0, gameOver: false, safeTeleport: 0 }
+      status: { 
+        level: 1, score: 0, gameOver: false, safeTeleport: 0,
+        theme: prevState.status.theme 
+      }
     }));
   };
 
@@ -344,7 +373,8 @@ class App extends Component {
           level: prevState.status.level + 1,
           score: prevState.status.score,
           gameOver: false,
-          safeTeleport: safeTeleport
+          safeTeleport: safeTeleport,
+        theme: prevState.status.theme
         }
       }));
     }
@@ -376,9 +406,22 @@ class App extends Component {
         level: prevState.status.level,
         score: prevState.status.score + score,
         gameOver: findIndex(bombs, cow) > -1 || findIndex(robots, cow) > -1,
-        safeTeleport: prevState.status.safeTeleport
+        safeTeleport: prevState.status.safeTeleport,
+        theme: prevState.status.theme
       }
     }), this.checkBoardStatus);
+  };
+
+  changeTheme = (theme) => {
+    this.setState(prevState => ({
+      status: {
+        level: prevState.status.level,
+        score: prevState.status.score,
+        gameOver: prevState.status.gameOver,
+        safeTeleport: prevState.status.safeTeleport,
+        theme: theme
+      }
+    }));
   };
 
   render() {
@@ -392,7 +435,7 @@ class App extends Component {
         <p className="App-intro">
         </p>
         <div className="Game">
-          <Status status={status}></Status>
+          <Status status={status} changeTheme={this.changeTheme}></Status>
           <Board robots={robots} cow={cow} bombs={bombs} moveCow={this.moveCow} status={status}></Board>
           <Control moveCow={this.moveCow} initNewGame={this.initNewGame} status={status} />
         </div>

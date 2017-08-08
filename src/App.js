@@ -20,6 +20,20 @@ const MOVE = {
     CATCH_ME:   'CATCH_ME'
 };
 
+const KEYBOARD_MOVE = {
+    k: MOVE.UP,
+    j: MOVE.DOWN,
+    h: MOVE.LEFT,
+    l: MOVE.RIGHT,
+    y: MOVE.UP_LEFT,
+    u: MOVE.UP_RIGHT,
+    b: MOVE.DOWN_LEFT,
+    n: MOVE.DOWN_RIGHT,
+    t: MOVE.TELEPORT,
+    s: MOVE.S_TELEPORT,
+    c: MOVE.CATCH_ME
+};
+
 const MOVE_SIZE = 40;
 const BOARD = {
   WIDTH: 1000,
@@ -29,12 +43,21 @@ const BOARD = {
 class Board extends Component {
   componentDidMount() {
     this.draw();
+    document.addEventListener('keypress', (event) => {
+      this.handleKeyPress(event.key);
+    });
   }
 
   componentWillReceiveProps() {
     this.draw();
   }
   
+  handleKeyPress = (key) => {
+    if (!this.props.status.gameOver) {
+      this.props.moveCow(KEYBOARD_MOVE[key]);
+    }
+  };
+
   draw = () => {
     var canvas = document.getElementById('board');
     const ctx = canvas.getContext('2d');
@@ -115,7 +138,7 @@ class Control extends Component {
   };
 
   getSafeTelBtnStatus = () => {
-    return this.props.status.safeTeleport === 0 ? 'disabled' : '';
+    return (this.getNavBtnStatus() && this.props.status.safeTeleport) === 0 ? 'disabled' : '';
   }
 
   getNavBtnStatus = () => {
@@ -153,7 +176,7 @@ class Control extends Component {
         </div>
         <div>&nbsp;</div>
         <div>
-          <button value={MOVE.CATCH_ME} onClick={this.handleMoveClick}>Catch Me If You Can</button>
+          <button disabled={this.getNavBtnStatus()} value={MOVE.CATCH_ME} onClick={this.handleMoveClick}>Catch Me If You Can</button>
         </div>          
       </section>
     );
@@ -284,9 +307,11 @@ class App extends Component {
       }));
     }
     // Otherwise, move robots
-    this.setState(prevState => ({
-      robots: this.calcRobotsPos(prevState.robots, prevState.cow)
-    }), this.checkCollision);
+    else {
+      this.setState(prevState => ({
+        robots: this.calcRobotsPos(prevState.robots, prevState.cow)
+      }), this.checkCollision);
+    }
   };
 
   initNewGame = () => {
@@ -359,7 +384,7 @@ class App extends Component {
   render() {
     const { robots, cow, bombs, status } = this.state;
     return (
-      <div className="App" onKeyUp={this.handleKeyEvent}>
+      <div className="App">
         <header className="App-header">
           <img src={cowLogo} className="App-logo" alt="logo" />
           <h2>Bad Robots</h2>
@@ -368,8 +393,8 @@ class App extends Component {
         </p>
         <div className="Game">
           <Status status={status}></Status>
-          <Board robots={robots} cow={cow} bombs={bombs}></Board>
-          <Control moveCow={this.moveCow} initNewGame={this.initNewGame} status={status}/>
+          <Board robots={robots} cow={cow} bombs={bombs} moveCow={this.moveCow} status={status}></Board>
+          <Control moveCow={this.moveCow} initNewGame={this.initNewGame} status={status} />
         </div>
         <footer></footer>
       </div>

@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
-import robotImg from './robot.png';
-import cowImg from './cow.png';
-import bombImg from './bomb.png';
-import cowLogo from './cow-full.png';
-import appleImg from './apple.png';
-import droidImg from './droid.png';
+import robotImg from './media/robot.png';
+import cowImg from './media/cow.png';
+import bombImg from './media/bomb.png';
+import cowLogo from './media/cow-full.png';
+import appleImg from './media/apple.png';
+import droidImg from './media/droid.png';
+import bananaImg from './media/banana.png';
+import burgerImg from './media/burger.png';
 import { findIndex, findLastIndex } from 'lodash';
 import './App.css';
 
@@ -55,7 +57,10 @@ class Board extends Component {
   }
   
   handleKeyPress = (key) => {
-    if (!this.props.status.gameOver) {
+    if (!this.props.status.gameOver && KEYBOARD_MOVE[key]) {
+      if (KEYBOARD_MOVE[key] === MOVE.S_TELEPORT && this.props.status.safeTeleport < 1) {
+        return;
+      }
       this.props.moveCow(KEYBOARD_MOVE[key]);
     }
   };
@@ -68,10 +73,18 @@ class Board extends Component {
           cowImage = new Image(),
           bombImage = new Image();
     const getRobotImg = (theme) => {
-      return theme === 'default' ? robotImg : droidImg;
+      switch (theme) {
+        case 'mobile': return droidImg;
+        case 'food': return burgerImg;
+        default: return robotImg;
+      }
     }
     const getCowImg = (theme) => {
-      return theme === 'default' ? cowImg : appleImg;
+      switch (theme) {
+        case 'mobile': return appleImg;
+        case 'food': return bananaImg;
+        default: return cowImg;
+      }
     }
 
     canvas.style.backgroundColor = 'rgba(158, 167, 184, 0.2)'
@@ -114,10 +127,14 @@ const Theme = (props) => {
     props.changeTheme(event.currentTarget.value);
   }
   return (
-    <section>
+    <section className="Status">
+    <div>
+      <label>Theme</label>
+    </div>
       <select name="theme" onChange={handleThemeChange}>
         <option value="default">Default</option>
         <option value="mobile">Mobile OS</option>
+        <option value="food">Food</option>
       </select>
     </section>
   );
@@ -126,26 +143,23 @@ const Theme = (props) => {
 const Status = (props) => {
   const displayGameOver = () => {
     if (props.status.gameOver) {
-      return (<span>GAME OVER</span>);
+      return (<span className="Game-over">GAME OVER</span>);
     }
   }
   return (
     <section className="Status">
       <Theme changeTheme={props.changeTheme}></Theme>
-      <div>{ displayGameOver() }</div>
-      <div>&nbsp;</div>
-      <div className="Level">
+      <div className="Status">{ displayGameOver() }</div>
+      <div className="Status">
         <div>Level</div>
         <div>{props.status.level}</div>
       </div>
-      <div>&nbsp;</div>
-      <div className="Score">
-        <div className="Score">Score</div>
+      <div className="Status">
+        <div>Score</div>
         <div>{props.status.score}</div>
       </div>
-      <div>&nbsp;</div>
-      <div>
-        <div className="Score">Safe Teleport</div>
+      <div className="Status">
+        <div>Safe Teleport</div>
         <div>{props.status.safeTeleport}</div>
       </div>    
     </section>
@@ -173,16 +187,14 @@ class Control extends Component {
     return (
       <section className='Control'>
         <div>
-          <button onClick={this.handleNewGameClick}>New Game</button>
+          <button className="newGame" onClick={this.handleNewGameClick}>New Game</button>
         </div>
-        <div>&nbsp;</div>
         <div>
           <button disabled={this.getNavBtnStatus()} value={MOVE.UP_LEFT} onClick={this.handleMoveClick}>Up+Left</button>
           <button disabled={this.getNavBtnStatus()} value={MOVE.UP} onClick={this.handleMoveClick}>Up</button>
           <button disabled={this.getNavBtnStatus()} value={MOVE.UP_RIGHT} onClick={this.handleMoveClick}>Up+Right</button>
         </div>
         <button disabled={this.getNavBtnStatus()} value={MOVE.LEFT} onClick={this.handleMoveClick}>Left</button>
-          <span>&emsp;&emsp;&emsp;</span>
         <button disabled={this.getNavBtnStatus()} value={MOVE.RIGHT} onClick={this.handleMoveClick}>Right
         </button>
         <div>
@@ -190,17 +202,14 @@ class Control extends Component {
           <button disabled={this.getNavBtnStatus()} value={MOVE.DOWN} onClick={this.handleMoveClick}>Down</button>
           <button disabled={this.getNavBtnStatus()} value={MOVE.DOWN_RIGHT} onClick={this.handleMoveClick}>Down+Right</button>
         </div>
-        <div>&nbsp;</div>
         <div>
-          <button disabled={this.getNavBtnStatus()} value={MOVE.TELEPORT} onClick={this.handleMoveClick}>Teleport</button>
+          <button className="teleport" disabled={this.getNavBtnStatus()} value={MOVE.TELEPORT} onClick={this.handleMoveClick}>Teleport</button>
         </div>
-        <div>&nbsp;</div>
         <div>
-          <button disabled={this.getSafeTelBtnStatus()} value={MOVE.S_TELEPORT} onClick={this.handleMoveClick}>Safe Teleport</button>
+          <button className="safeTeleport" disabled={this.getSafeTelBtnStatus()} value={MOVE.S_TELEPORT} onClick={this.handleMoveClick}>Safe Teleport</button>
         </div>
-        <div>&nbsp;</div>
         <div>
-          <button disabled={this.getNavBtnStatus()} value={MOVE.CATCH_ME} onClick={this.handleMoveClick}>Catch Me If You Can</button>
+          <button className="catchMe" disabled={this.getNavBtnStatus()} value={MOVE.CATCH_ME} onClick={this.handleMoveClick}>Catch Me If You Can</button>
         </div>          
       </section>
     );

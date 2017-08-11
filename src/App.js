@@ -7,6 +7,8 @@ import appleImg from './media/apple.png';
 import droidImg from './media/droid.png';
 import bananaImg from './media/banana.png';
 import burgerImg from './media/burger.png';
+import goodPokeImg from './media/pikachu.png';
+import badPokeImg from './media/jigglypuff.png';
 import { findIndex, findLastIndex } from 'lodash';
 import './App.css';
 
@@ -76,6 +78,7 @@ class Board extends Component {
       switch (theme) {
         case 'mobile': return droidImg;
         case 'food': return burgerImg;
+        case 'pokemon': return badPokeImg;
         default: return robotImg;
       }
     }
@@ -83,6 +86,7 @@ class Board extends Component {
       switch (theme) {
         case 'mobile': return appleImg;
         case 'food': return bananaImg;
+        case 'pokemon': return goodPokeImg;
         default: return cowImg;
       }
     }
@@ -135,6 +139,7 @@ const Theme = (props) => {
         <option value="default">Default</option>
         <option value="mobile">Mobile OS</option>
         <option value="food">Food</option>
+        <option value="pokemon">Pokemon</option>
       </select>
     </section>
   );

@@ -1,4 +1,4 @@
-This is a modern take on the classic [BSD robots](https://www.freebsd.org/cgi/man.cgi?query=robots&apropos=0&sektion=6) game that was quite popular in the '90s.
+This is a modern take on the classic [BSD robots](https://www.freebsd.org/cgi/man.cgi?query=robots&apropos=0&sektion=6) game that was quite popular in the '90s. It's still a work in progress and best view in large screen. :)
 
 How to play: 
 

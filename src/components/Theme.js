@@ -11,8 +11,6 @@ const Theme = (props) => {
         <select name="theme" onChange={handleThemeChange}>
           <option value="default">Default</option>
           <option value="mobile">Mobile OS</option>
-          <option value="food">Food</option>
-          <option value="pokemon">Pokemon</option>
         </select>
       </section>
     );

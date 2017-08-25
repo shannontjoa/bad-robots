@@ -12,7 +12,7 @@ class Control extends Component {
     };
   
     getSafeTelBtnStatus = () => {
-      return (this.getNavBtnStatus() && this.props.status.safeTeleport) === 0 ? 'disabled' : '';
+      return (this.getNavBtnStatus() === 'disabled' || this.props.status.safeTeleport === 0) ? 'disabled' : '';
     }
   
     getNavBtnStatus = () => {

@@ -5,10 +5,6 @@ import cowImg from '../media/cow.png';
 import bombImg from '../media/bomb.png';
 import appleImg from '../media/apple.png';
 import droidImg from '../media/droid.png';
-import bananaImg from '../media/banana.png';
-import burgerImg from '../media/burger.png';
-import goodPokeImg from '../media/pikachu.png';
-import badPokeImg from '../media/jigglypuff.png';
 
 const { BOARD, KEYBOARD_MOVE, MOVE } = AppProperties;
 
@@ -43,16 +39,12 @@ class Board extends Component {
       const getRobotImg = (theme) => {
         switch (theme) {
           case 'mobile': return droidImg;
-          case 'food': return burgerImg;
-          case 'pokemon': return badPokeImg;
           default: return robotImg;
         }
       }
       const getCowImg = (theme) => {
         switch (theme) {
           case 'mobile': return appleImg;
-          case 'food': return bananaImg;
-          case 'pokemon': return goodPokeImg;
           default: return cowImg;
         }
       }

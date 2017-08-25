@@ -7,7 +7,7 @@ How to play:
 * Safe Teleport: Earn it by using the 'catch me if you can' feature.
 * Catch me if you can: Stay still and let the robots come to you. If you are successful you'll earn one 'safe teleport' token.
 
-## [Demo] (https://shannontjoa.github.io/bad-robots/)
+## [Demo](https://shannontjoa.github.io/bad-robots/)
 
 This project was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app).
 

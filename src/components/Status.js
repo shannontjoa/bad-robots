@@ -4,7 +4,7 @@ import Theme from './Theme'
 const Status = (props) => {
     const displayGameOver = () => {
       if (props.status.gameOver) {
-        return (<span className="Game-over">GAME OVER</span>);
+        return (<span className="Game-over">GAME OVER DUDE!</span>);
       }
     }
     return (

@@ -4,6 +4,7 @@
   "private": true,
   "homepage": "https://shannontjoa.github.io/bad-robots",
   "dependencies": {
+    "lodash": "^4.17.4",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
     "react-scripts": "1.0.10"
@@ -17,6 +18,11 @@
     "deploy": "gh-pages -d build"
   },
   "devDependencies": {
+    "eslint": "^4.16.0",
+    "eslint-config-airbnb": "^16.1.0",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-jsx-a11y": "^6.0.3",
+    "eslint-plugin-react": "^7.5.1",
     "gh-pages": "^1.0.0"
   }
 }

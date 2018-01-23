@@ -8,7 +8,7 @@ import appleImg from '../media/apple.png';
 import droidImg from '../media/droid.png';
 import type { Position, Positions } from '../App';
 
-const { BOARD, KEYBOARD_MOVE, MOVE } = AppProperties;
+const { BOARD } = AppProperties;
 
 type Props = {
   status: {
@@ -16,7 +16,6 @@ type Props = {
     safeTeleport: number,
     gameOver: boolean,
   },
-  moveCow: string => void,
   cow: Position,
   robots: Positions,
   bombs: Positions,
@@ -24,27 +23,16 @@ type Props = {
 class Board extends React.Component<Props, {}> {
   componentDidMount() {
     this.draw(this.props.status.theme);
-    document.addEventListener('keypress', (event) => {
-      this.handleKeyPress(event.key);
-    });
   }
 
-  componentWillReceiveProps(nextProps: Props) {
-    this.draw(nextProps.status.theme);
+  componentDidUpdate(prevProps: Props) {
+    this.draw(prevProps.status.theme);
   }
 
-  handleKeyPress(key: string) {
-    if (!this.props.status.gameOver && KEYBOARD_MOVE[key]) {
-      if (KEYBOARD_MOVE[key] === MOVE.S_TELEPORT && this.props.status.safeTeleport < 1) {
-        return;
-      }
-      this.props.moveCow(KEYBOARD_MOVE[key]);
-    }
-  }
+  canvas: HTMLCanvasElement;
 
   draw(theme: string = 'default') {
-    const canvas = document.getElementById('board');
-    const ctx = canvas.getContext('2d');
+    const ctx = this.canvas.getContext('2d');
     const robotImage = new Image();
     const cowImage = new Image();
     const bombImage = new Image();
@@ -65,8 +53,8 @@ class Board extends React.Component<Props, {}> {
       }
     };
 
-    canvas.style.backgroundColor = 'rgba(158, 167, 184, 0.2)';
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    this.canvas.style.backgroundColor = 'rgba(158, 167, 184, 0.2)';
+    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     robotImage.src = getRobotImg();
     robotImage.onload = () => {
@@ -93,11 +81,14 @@ class Board extends React.Component<Props, {}> {
 
   render() {
     return (
-      <section>
-        <canvas id="board" width={BOARD.WIDTH} height={BOARD.HEIGHT}>
-          No Canvas available in your browser
-        </canvas>
-      </section>
+      <canvas
+        ref={node => (this.canvas = node)}
+        id="board"
+        width={BOARD.WIDTH}
+        height={BOARD.HEIGHT}
+      >
+        No Canvas available in your browser
+      </canvas>
     );
   }
 }

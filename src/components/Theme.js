@@ -5,6 +5,8 @@ const Theme = (props: { changeTheme: string => void }) => {
   const handleThemeChange = (event) => {
     props.changeTheme(event.currentTarget.value);
   };
+
+  /* eslint-disable jsx-a11y/label-has-for */
   return (
     <section className="Status">
       <div>

@@ -316,7 +316,7 @@ class App extends React.Component<{}, State> {
         <p className="App-intro" />
         <div className="Game">
           <Status status={status} changeTheme={this.changeTheme} />
-          <Board robots={robots} cow={cow} bombs={bombs} moveCow={this.moveCow} status={status} />
+          <Board robots={robots} cow={cow} bombs={bombs} status={status} />
           <Control moveCow={this.moveCow} initNewGame={this.initNewGame} status={status} />
         </div>
         <footer />

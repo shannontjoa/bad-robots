@@ -1,6 +1,7 @@
+// @flow
 import React from 'react';
 
-const Theme = (props) => {
+const Theme = (props: { changeTheme: string => void }) => {
   const handleThemeChange = (event) => {
     props.changeTheme(event.currentTarget.value);
   };

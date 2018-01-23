@@ -1,27 +1,35 @@
+// @flow
 import React from 'react';
 import { findIndex, findLastIndex } from 'lodash';
 import cowLogo from './media/cow-full.png';
-import Board from './containers/Board';
-import Control from './containers/Control';
+import Board from './components/Board';
+import Control from './components/Control';
 import Status from './components/Status';
 import AppProperties from './AppProperties';
 import './App.css';
 
+export type Position = {
+  x: number,
+  y: number,
+};
+
+export type Positions = Array<Position>;
+
 const { MOVE, MOVE_SIZE, BOARD } = AppProperties;
 
-const getRandomInt = (a, b) => {
+const getRandomInt = (a: number, b: number): number => {
   const min = Math.ceil(a);
   const max = Math.floor(b);
   return Math.floor(Math.random() * (max - min)) + min;
 };
-const getRandomPos = (min, max) => getRandomInt(min, max) * MOVE_SIZE;
+const getRandomPos = (min: number, max: number): number => getRandomInt(min, max) * MOVE_SIZE;
 
 const getNewPos = () => ({
   x: getRandomPos(0, BOARD.WIDTH / 40),
   y: getRandomPos(0, BOARD.HEIGHT / 40),
 });
 
-const genRoboPos = (level) => {
+const genRoboPos = (level: number) => {
   const incrementBy = 5;
   let robots = new Array(level * incrementBy);
   robots.fill(null);
@@ -75,8 +83,8 @@ const catchMeIfYouCan = (() => {
   };
 })();
 
-const calcRobotsPos = (robots, cow) =>
-  robots.map((robot) => {
+const calcRobotsPos = (robots: Positions, cow: Position): Positions =>
+  robots.map((robot: Position) => {
     const newRobot = {};
     if (robot.x === cow.x) {
       newRobot.x = robot.x;
@@ -91,21 +99,35 @@ const calcRobotsPos = (robots, cow) =>
     return newRobot;
   });
 
-class App extends React.Component {
-  constructor(props) {
+const getInitialState = () => ({
+  robots: genRoboPos(1),
+  cow: getNewPos(),
+  bombs: [],
+  status: {
+    level: 1,
+    score: 0,
+    gameOver: false,
+    safeTeleport: 0,
+    theme: 'default',
+  },
+});
+
+type State = {
+  robots: Positions,
+  cow: Position,
+  bombs: Positions,
+  status: {
+    level: number,
+    score: number,
+    gameOver: boolean,
+    safeTeleport: number,
+    theme: string,
+  },
+};
+class App extends React.Component<{}, State> {
+  constructor(props: {}) {
     super(props);
-    this.state = {
-      robots: genRoboPos(1),
-      cow: getNewPos(),
-      bombs: [],
-      status: {
-        level: 1,
-        score: 0,
-        gameOver: false,
-        safeTeleport: 0,
-        theme: 'default',
-      },
-    };
+    this.state = getInitialState();
     this.calcCowPos = this.calcCowPos.bind(this);
     this.moveCow = this.moveCow.bind(this);
     this.moveRobots = this.moveRobots.bind(this);
@@ -115,7 +137,15 @@ class App extends React.Component {
     this.changeTheme = this.changeTheme.bind(this);
   }
 
-  calcCowPos(cow, dir) {
+  calcCowPos: (Position, string) => Position;
+  moveCow: string => void;
+  moveRobots: () => void;
+  initNewGame: () => void;
+  checkBoardStatus: () => void;
+  checkCollision: () => void;
+  changeTheme: string => void;
+
+  calcCowPos(cow: Position, dir: string) {
     if (dir === MOVE.TELEPORT) {
       return getNewPos();
     }
@@ -161,7 +191,7 @@ class App extends React.Component {
     return newCow[dir];
   }
 
-  moveCow(dir) {
+  moveCow(dir: string) {
     if (dir === MOVE.CATCH_ME) {
       catchMeIfYouCan.getInstance().start(this.moveRobots);
     }
@@ -205,14 +235,9 @@ class App extends React.Component {
   initNewGame() {
     catchMeIfYouCan.getInstance().stop();
     this.setState(prevState => ({
-      robots: genRoboPos(1),
-      cow: getNewPos(),
-      bombs: [],
+      ...getInitialState(),
       status: {
-        level: 1,
-        score: 0,
-        gameOver: false,
-        safeTeleport: 0,
+        ...getInitialState().status,
         theme: prevState.status.theme,
       },
     }));
@@ -248,10 +273,8 @@ class App extends React.Component {
     let score = 0;
     // Find robots that weren't bombed.
     const bombSurvivors = robots.filter(robot => findIndex(bombs, robot) === -1);
-
     // Check collision with one another
     const aliveRobots = bombSurvivors.filter((robot, index, bots) => findLastIndex(bots, robot) === findIndex(bots, robot));
-
     const newBombs = bombSurvivors.filter((robot, index, bots) => findLastIndex(bots, robot) !== findIndex(bots, robot));
 
     score = (robots.length - bombSurvivors.length) * 2;
@@ -271,7 +294,7 @@ class App extends React.Component {
     );
   }
 
-  changeTheme(theme) {
+  changeTheme(theme: string) {
     this.setState(prevState => ({
       status: {
         ...prevState.status,

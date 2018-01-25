@@ -1,5 +1,9 @@
 // @flow
 import React from 'react';
+import ArrowDownIcon from 'react-icons/lib/md/arrow-downward';
+import ArrowUpIcon from 'react-icons/lib/md/arrow-upward';
+import ArrowRightIcon from 'react-icons/lib/md/arrow-forward';
+import ArrowLeftIcon from 'react-icons/lib/md/arrow-back';
 import AppProperties from '../AppProperties';
 
 const { MOVE } = AppProperties;
@@ -27,6 +31,9 @@ class Control extends React.Component<Props> {
   render() {
     const { gameOver, safeTeleport } = this.props.status;
     const { initNewGame } = this.props;
+    const rotateIcon = {
+      transform: 'rotate(45deg)',
+    };
     return (
       <section className="Control">
         <div>
@@ -36,30 +43,30 @@ class Control extends React.Component<Props> {
         </div>
         <div>
           <button disabled={gameOver} onClick={this.handleMoveClick(MOVE.UP_LEFT)}>
-            Up+Left
+            <ArrowLeftIcon size={20} style={rotateIcon} />
           </button>
           <button disabled={gameOver} onClick={this.handleMoveClick(MOVE.UP)}>
-            Up
+            <ArrowUpIcon size={20} />
           </button>
           <button disabled={gameOver} onClick={this.handleMoveClick(MOVE.UP_RIGHT)}>
-            Up+Right
+            <ArrowUpIcon size={20} style={rotateIcon} />
           </button>
         </div>
         <button disabled={gameOver} onClick={this.handleMoveClick(MOVE.LEFT)}>
-          Left
+          <ArrowLeftIcon size={20} />
         </button>
         <button disabled={gameOver} onClick={this.handleMoveClick(MOVE.RIGHT)}>
-          Right
+          <ArrowRightIcon size={20} />
         </button>
         <div>
           <button disabled={gameOver} onClick={this.handleMoveClick(MOVE.DOWN_LEFT)}>
-            Down+Left
+            <ArrowDownIcon size={20} style={rotateIcon} />
           </button>
           <button disabled={gameOver} onClick={this.handleMoveClick(MOVE.DOWN)}>
-            Down
+            <ArrowDownIcon size={20} />
           </button>
           <button disabled={gameOver} onClick={this.handleMoveClick(MOVE.DOWN_RIGHT)}>
-            Down+Right
+            <ArrowRightIcon size={20} style={rotateIcon} />
           </button>
         </div>
         <div>

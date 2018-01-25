@@ -11,9 +11,9 @@
     "lodash": "^4.17.4",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
-    "react-scripts": "0.95"
+    "react-icons": "^2.2.7",
+    "react-scripts": "0.9.5"
   },
-
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",

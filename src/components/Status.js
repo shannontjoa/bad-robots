@@ -15,7 +15,7 @@ const Status = (props: Props) => (
   <section className="Status">
     <Theme changeTheme={props.changeTheme} />
     <div className="Status">
-      {props.status.gameOver && <span className="Game-over">GAME OVER DUDE!</span>}
+      {props.status.gameOver && <span className="Game-over">Game Over</span>}
     </div>
     <div className="Status">
       <div>Level</div>

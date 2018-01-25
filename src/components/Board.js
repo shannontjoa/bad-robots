@@ -25,8 +25,8 @@ class Board extends React.Component<Props, {}> {
     this.draw(this.props.status.theme);
   }
 
-  componentDidUpdate(prevProps: Props) {
-    this.draw(prevProps.status.theme);
+  componentWillReceiveProps(nextProps: Props) {
+    this.draw(nextProps.status.theme);
   }
 
   canvas: HTMLCanvasElement;
